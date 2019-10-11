@@ -1,0 +1,6 @@
+Added Component: Designator=2(Switch360)
+Added Pin To Net: NetName=Net1_3 Pin=2-1
+Added Pin To Net: NetName=Net1_2 Pin=2-2
+Added Pin To Net: NetName=Net1_1 Pin=2-3
+Added Member To Class: ClassName=Sheet2 Member=Component 2 Switch360
+Added Room: Name=Sheet2
