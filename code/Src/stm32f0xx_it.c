@@ -57,6 +57,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc;
+extern TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -168,6 +169,20 @@ void ADC1_COMP_IRQHandler(void)
   /* USER CODE END ADC1_COMP_IRQn 1 */
 }
 
+/**
+  * @brief This function handles TIM6 global and DAC underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
 /* USER CODE BEGIN 1 */
 unsigned char swA[2];
 unsigned char swB[2];
@@ -175,6 +190,8 @@ unsigned char sw_count = 0;
 extern 	unsigned char sw_value;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+	int i = 5000;
+	while(i--);
 	swA[sw_count] = HAL_GPIO_ReadPin(SW_A_GPIO_Port,SW_A_Pin);
 	swB[sw_count] = HAL_GPIO_ReadPin(SW_B_GPIO_Port,SW_B_Pin);
 	sw_count++;
@@ -182,11 +199,24 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	{
 		if((swA[0] == 0 && swA[1] == 1 && swB[0] == 1 && swB[1] == 1) || (swA[0] == 1 && swA[1] == 0 && swB[0] == 0 && swB[1] == 0))
 		{
-			sw_value++;
+			if(sw_value < 15)
+				sw_value++;
 		}
 		if((swA[0] == 1 && swA[1] == 1 && swB[0] == 0 && swB[1] == 1) || (swA[0] == 0 && swA[1] == 0 && swB[0] == 1 && swB[1] == 0))
 		{
-			sw_value--;
+			if(sw_value != 0)
+				sw_value--;
+		}
+		if((swA[0] == 0 && swA[1] == 1 && swB[0] == 0 && swB[1] == 0) || (swA[0] == 1 && swA[1] == 0 && swB[0] == 1 && swB[1] == 1))
+		{
+			if(sw_value != 0)
+				sw_value--;
+		}
+		if((swA[0] == 1 && swA[1] == 1 && swB[0] == 1 && swB[1] == 0) || (swA[0] == 0 && swA[1] == 0 && swB[0] == 0 && swB[1] == 1))
+		{
+
+			if(sw_value < 15)
+				sw_value++;
 		}
 		sw_count = 0;
 	}
@@ -195,6 +225,14 @@ extern 	unsigned char adc_value;
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	adc_value = HAL_ADC_GetValue(hadc);
+}
+
+extern int count;
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	count++;
+	if(count == 300)
+		HAL_GPIO_WritePin(POW_CONTROL_GPIO_Port,POW_CONTROL_Pin,0);
 }
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

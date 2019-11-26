@@ -67,6 +67,7 @@ unsigned char adc_value;
 unsigned char adc_sw;
 char sw_value;
 unsigned char sw_sw;
+int count = 0;
 /* USER CODE END 0 */
 
 /**
@@ -109,6 +110,7 @@ int main(void)
 	HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,0);
 	HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,0);
 	HAL_TIMEx_HallSensor_Start_IT(&htim1);
+	HAL_TIM_Base_Start_IT(&htim6);
 	HAL_ADC_Start_IT(&hadc);
 	//HAL_ADC_Start_DMA(&hadc,(unsigned int*)adc_buffer,1024);
 	
@@ -131,6 +133,7 @@ int main(void)
 			HAL_GPIO_WritePin(POW_TRACKER_GPIO_Port,POW_TRACKER_Pin,0);
 			while(HAL_GPIO_ReadPin(POW_CHECK_GPIO_Port,POW_CHECK_Pin))
 			{
+				count = 0;
 				HAL_Delay(100);
 			}
 			HAL_GPIO_WritePin(POW_TRACKER_GPIO_Port,POW_TRACKER_Pin,1);
@@ -139,39 +142,68 @@ int main(void)
 			HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 		}
 		
+		if(adc_value > 0x5d)
+			adc_sw = 0;
+		else if(adc_value >0x59)
+			adc_sw = 1;
+		else if(adc_value > 0x52)
+			adc_sw = 2;
+		else
+			adc_sw = 3;
 		
 		
-		HAL_GPIO_WritePin(PAK_GPIO_Port,PAK_Pin,1);
-		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,0);
-		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,HAL_GPIO_ReadPin(BUTTON_GPIO_Port,BUTTON_Pin));
-		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,HAL_GPIO_ReadPin(BUTTON_SW_GPIO_Port,BUTTON_SW_Pin));
-		HAL_Delay(50);
+		if(HAL_GPIO_ReadPin(BUTTON_GPIO_Port,BUTTON_Pin) == 1 || HAL_GPIO_ReadPin(BUTTON_SW_GPIO_Port,BUTTON_SW_Pin) == 1)
+			count = 0;
+		
+		
+		sw_sw = sw_value;
+		
+//		HAL_GPIO_WritePin(PAK_GPIO_Port,PAK_Pin,0);
+//		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,1);
+//		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,!HAL_GPIO_ReadPin(BUTTON_GPIO_Port,BUTTON_Pin));
+//		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,!HAL_GPIO_ReadPin(BUTTON_SW_GPIO_Port,BUTTON_SW_Pin));
+//		HAL_Delay(50);
+//		HAL_GPIO_WritePin(PAK_GPIO_Port,PAK_Pin,1);
+//		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,0);
+//		HAL_Delay(50);
+//		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,1);
+//		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,!(adc_sw & 0x01));
+//		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,!((adc_sw >> 1) & 0x01));
+//		HAL_Delay(50);
+//		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,0);
+//		HAL_Delay(50);
+//		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,1);
+//		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,!(sw_sw & 0x01));
+//		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,!((sw_sw >> 1) & 0x01));
+//		HAL_Delay(50);
+//		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,0);
+//		HAL_Delay(50);
+//		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,1);
+//		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,!((sw_sw >> 2) & 0x01));
+//		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,!((sw_sw >> 3) & 0x01));
+//		HAL_Delay(50);
+//		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,0);
+//		HAL_Delay(50);
+//		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,1);
+//		
+//		
+		
+		
+		
 		HAL_GPIO_WritePin(PAK_GPIO_Port,PAK_Pin,0);
-		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,1);
-		HAL_Delay(50);
-		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,0);
-		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,adc_sw & 0x01);
-		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,(adc_sw >> 1) & 0x01);
-		HAL_Delay(50);
-		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,1);
-		HAL_Delay(50);
-		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,0);
-		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,sw_sw & 0x01);
-		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,(sw_sw >> 1) & 0x01);
-		HAL_Delay(50);
-		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,1);
-		HAL_Delay(50);
-		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,0);
-		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,(sw_sw >> 2) & 0x01);
-		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,(sw_sw >> 3) & 0x01);
-		HAL_Delay(50);
-		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,1);
-		HAL_Delay(50);
-		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,0);
-		
-		
-		
-		
+		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,!HAL_GPIO_ReadPin(BUTTON_GPIO_Port,BUTTON_Pin));
+		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,!HAL_GPIO_ReadPin(BUTTON_SW_GPIO_Port,BUTTON_SW_Pin));
+		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,!(adc_sw & 0x01));
+		HAL_Delay(80);
+		HAL_GPIO_WritePin(PAK_GPIO_Port,PAK_Pin,1);
+		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,!((adc_sw >> 1) & 0x01));
+		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,!(sw_sw & 0x01));
+		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,!((sw_sw >> 1) & 0x01));
+		HAL_Delay(80);
+		HAL_GPIO_WritePin(CLK_GPIO_Port,CLK_Pin,!((sw_sw >> 2) & 0x01));
+		HAL_GPIO_WritePin(DATA0_GPIO_Port,DATA0_Pin,!((sw_sw >> 3) & 0x01));
+		HAL_GPIO_WritePin(DATA1_GPIO_Port,DATA1_Pin,1);
+		HAL_Delay(80);
 		//if(HAL_GPIO_ReadPin(POW_CHECK_GPIO_Port,POW_CHECK_Pin)==1)
 //		if(HAL_GPIO_ReadPin(BUTTON_GPIO_Port,BUTTON_Pin)==1)
 //			HAL_GPIO_WritePin(BUTTON_LED_GPIO_Port,BUTTON_LED_Pin,1);
@@ -335,9 +367,9 @@ static void MX_TIM6_Init(void)
 
   /* USER CODE END TIM6_Init 1 */
   htim6.Instance = TIM6;
-  htim6.Init.Prescaler = 48;
+  htim6.Init.Prescaler = 4800;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 999;
+  htim6.Init.Period = 9999;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
